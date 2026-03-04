@@ -7,7 +7,7 @@
     <style>
         body {
             background-color: #000;
-            color: #ffffff; /* Белый текст */
+            color: #ffffff;
             font-family: 'Courier New', Courier, monospace;
             font-size: 13px;
             margin: 0;
@@ -16,8 +16,8 @@
             line-height: 1.3;
         }
         #console { word-wrap: break-word; }
-        .credit-line { color: #ffffff; font-weight: bold; }
-        .junk-line { opacity: 0.4; font-size: 10px; } /* Мусор чуть бледнее, чтобы выделить главное */
+        .credit-line { color: #ffffff; font-weight: bold; text-transform: uppercase; }
+        .junk-line { opacity: 0.5; font-size: 11px; color: #aaaaaa; }
     </style>
 </head>
 <body>
@@ -26,7 +26,6 @@
     <script>
         const consoleElement = document.getElementById('console');
 
-        // ВАШ ТЕКСТ (выводится строго по порядку)
         const creditSteps = [
             "[BOOT] PRODUCT=КРЕДИТ",
             "[BOOT] CREDIT_APPLICATION_ID=APP-RU-3000000",
@@ -59,47 +58,50 @@
             "system.log :: CREDIT_FLOW_v3.7 :: END"
         ];
 
+        const junkLibrary = [
+            "proc/sys/net/ipv4/tcp_mem...",
+            "SQUASHFS error: zlib decompression failed",
+            "EXT4-fs (mmcblk0p2): mounted filesystem",
+            "audit: type=1400 audit(1614861): avc: denied",
+            "DEBUG: task_struct integrity check: OK",
+            "MEM_ALLOC: 0xFA" + Math.random().toString(16).substring(2, 6).toUpperCase(),
+            "dhcp_do_release: 0x" + Math.random().toString(16).substring(2, 8)
+        ];
+
         let currentStep = 0;
+        let junkCountToPrint = 0;
 
-        function getRandomJunk() {
-            const junk = [
-                "proc/sys/net/ipv4/tcp_mem...",
-                "SQUASHFS error: zlib decompression failed",
-                "EXT4-fs (mmcblk0p2): mounted filesystem",
-                "audit: type=1400 audit(1614861): avc: denied",
-                "dhcp_do_release: 0x" + Math.random().toString(16).substring(2, 10),
-                "DEBUG: task_struct integrity check: OK",
-                "MEM_ALLOC: 0xFA" + Math.random().toString(16).substring(2, 6)
-            ];
-            return junk[Math.floor(Math.random() * junk.length)];
-        }
+        function printLine() {
+            if (currentStep >= creditSteps.length) return;
 
-        const interval = setInterval(() => {
             const newLine = document.createElement('div');
-            
-            // Логика: 10% шанс вывести строку про кредит, 90% — мусор
-            if (Math.random() < 0.1 && currentStep < creditSteps.length) {
+
+            // Если мы еще не вывели нужное кол-во мусора (от 2 до 6)
+            if (junkCountToPrint > 0) {
+                newLine.textContent = `[${Date.now()}] ${junkLibrary[Math.floor(Math.random() * junkLibrary.length)]}`;
+                newLine.className = 'junk-line';
+                junkCountToPrint--;
+            } else {
+                // Выводим важную строку про кредит
                 newLine.textContent = creditSteps[currentStep];
                 newLine.className = 'credit-line';
                 currentStep++;
-            } else {
-                newLine.textContent = `[${Date.now()}] ${getRandomJunk()}`;
-                newLine.className = 'junk-line';
+                // Задаем случайное количество мусора для следующего цикла
+                junkCountToPrint = Math.floor(Math.random() * (6 - 2 + 1)) + 2;
             }
 
             consoleElement.appendChild(newLine);
             window.scrollTo(0, document.body.scrollHeight);
+
+            // Скорость вывода (регулируйте тут)
+            const speed = (newLine.className === 'credit-line') ? 800 : 100; 
+            // После важной строки пауза подольше (800мс), чтобы успел прочитать
             
-            // Если все шаги пройдены, останавливаемся через пару секунд
-            if (currentStep >= creditSteps.length) {
-                clearInterval(interval);
-                setTimeout(() => {
-                    const lock = document.createElement('div');
-                    lock.innerHTML = "<br><br><div style='border:1px solid white; padding:10px; text-align:center;'>СОЕДИНЕНИЕ РАЗОРВАНО<br>ФАЙЛ ПОВРЕЖДЕН</div>";
-                    consoleElement.appendChild(lock);
-                }, 1000);
-            }
-        }, 30); // Оптимальная скорость для чтения
+            setTimeout(printLine, speed);
+        }
+
+        // Запуск
+        printLine();
     </script>
 </body>
 </html>
