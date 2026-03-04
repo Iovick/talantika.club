@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>System Runtime</title>
+    <title>System Logs</title>
     <style>
         body {
             background-color: #000;
             color: #ffffff;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
+            font-size: 14px;
             margin: 0;
-            padding: 15px;
-            overflow: hidden;
-            line-height: 1.3;
+            padding: 20px;
+            /* Разрешаем скролл */
+            overflow-y: auto; 
+            line-height: 1.5;
         }
-        #console { word-wrap: break-word; }
-        .credit-line { color: #ffffff; font-weight: bold; text-transform: uppercase; }
-        .junk-line { opacity: 0.5; font-size: 11px; color: #aaaaaa; }
+        #console {
+            word-wrap: break-word;
+            padding-bottom: 50px; /* Отступ снизу, чтобы текст не прилипал */
+        }
+        .line {
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -26,82 +32,71 @@
     <script>
         const consoleElement = document.getElementById('console');
 
+        // ВАШ ТЕКСТ
         const creditSteps = [
             "[BOOT] PRODUCT=КРЕДИТ",
             "[BOOT] CREDIT_APPLICATION_ID=APP-RU-3000000",
             "[BOOT] CREDIT_AMOUNT=3_000_000 RUB",
             "[BOOT] CLIENT_ID=RU-884291",
+            "",
             "// ЭТАП 1: КРЕДИТНАЯ ЗАЯВКА",
             "CMD> CREATE_CREDIT_APPLICATION() → STATUS=DRAFT",
             "CMD> VERIFY_CLIENT_IDENTITY() → OK",
             "CMD> CHECK_CREDIT_CONSENTS() → GRANTED",
+            "",
             "// ЭТАП 2: ОЦЕНКА ПО КРЕДИТУ",
             "CMD> REQUEST_CREDIT_HISTORY() → SCORE=782 → RISK=LOW",
             "CMD> ANALYZE_CLIENT_INCOME() → AVG=245_000 RUB",
             "CMD> CALCULATE_CREDIT_DTI() → 28% → ACCEPTED",
+            "",
             "// ЭТАП 3: УСЛОВИЯ КРЕДИТА",
             "CMD> GENERATE_CREDIT_TERMS()",
             "    → CREDIT_SUM=3_000_000 RUB",
             "    → TERM=60M",
             "    → RATE=12.4%",
             "    → STATUS=PRE_APPROVED",
+            "",
             "CMD> SIGN_CREDIT_CONTRACT() → ESIGN=VALID → STATUS=SIGNED",
             "CMD> OPEN_CREDIT_ACCOUNT() → STATUS=ACTIVE",
+            "",
             "// ЭТАП 4: ВЫДАЧА КРЕДИТА",
             "CMD> AML_CHECK() → PASSED",
             "CMD> EXECUTE_CREDIT_TRANSFER() → STATUS=SUCCESS",
+            "",
             "// ЭТАП 5: ЗАЧИСЛЕНИЕ КРЕДИТА",
             "CMD> CONFIRM_CREDIT_FUNDS_RECEIPT() → BALANCE=3_000_000 RUB",
             "CMD> SET_CREDIT_RECIPIENT(\"Ромаев Дмитрий Закиреевич\")",
             "CMD> UPDATE_CREDIT_TRANSFER_STATUS() → \"КРЕДИТ УСПЕШНО ЗАЧИСЛЕН\"",
+            "",
             "[FINAL_STATUS] CREDIT_ACTIVE",
             "system.log :: CREDIT_FLOW_v3.7 :: END"
         ];
 
-        const junkLibrary = [
-            "proc/sys/net/ipv4/tcp_mem...",
-            "SQUASHFS error: zlib decompression failed",
-            "EXT4-fs (mmcblk0p2): mounted filesystem",
-            "audit: type=1400 audit(1614861): avc: denied",
-            "DEBUG: task_struct integrity check: OK",
-            "MEM_ALLOC: 0xFA" + Math.random().toString(16).substring(2, 6).toUpperCase(),
-            "dhcp_do_release: 0x" + Math.random().toString(16).substring(2, 8)
-        ];
-
         let currentStep = 0;
-        let junkCountToPrint = 0;
 
         function printLine() {
             if (currentStep >= creditSteps.length) return;
 
             const newLine = document.createElement('div');
-
-            // Если мы еще не вывели нужное кол-во мусора (от 2 до 6)
-            if (junkCountToPrint > 0) {
-                newLine.textContent = `[${Date.now()}] ${junkLibrary[Math.floor(Math.random() * junkLibrary.length)]}`;
-                newLine.className = 'junk-line';
-                junkCountToPrint--;
-            } else {
-                // Выводим важную строку про кредит
-                newLine.textContent = creditSteps[currentStep];
-                newLine.className = 'credit-line';
-                currentStep++;
-                // Задаем случайное количество мусора для следующего цикла
-                junkCountToPrint = Math.floor(Math.random() * (6 - 2 + 1)) + 2;
-            }
-
-            consoleElement.appendChild(newLine);
-            window.scrollTo(0, document.body.scrollHeight);
-
-            // Скорость вывода (регулируйте тут)
-            const speed = (newLine.className === 'credit-line') ? 800 : 100; 
-            // После важной строки пауза подольше (800мс), чтобы успел прочитать
+            newLine.className = 'line';
+            newLine.textContent = creditSteps[currentStep];
             
-            setTimeout(printLine, speed);
+            consoleElement.appendChild(newLine);
+            
+            // Авто-скролл вниз при появлении новой строки
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+
+            currentStep++;
+            
+            // Скорость появления строк (500мс = полсекунды)
+            setTimeout(printLine, 500);
         }
 
-        // Запуск
-        printLine();
+        // Запуск через секунду после открытия
+        setTimeout(printLine, 1000);
     </script>
 </body>
 </html>
