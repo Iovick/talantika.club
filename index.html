@@ -3,23 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>System Update</title>
+    <title>System Runtime</title>
     <style>
         body {
             background-color: #000;
-            color: #28fe14;
+            color: #ffffff; /* Белый текст */
             font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
+            font-size: 13px;
             margin: 0;
-            padding: 10px;
+            padding: 15px;
             overflow: hidden;
-            line-height: 1.2;
+            line-height: 1.3;
         }
-        #console {
-            word-wrap: break-word;
-        }
-        .error { color: #ff0000; }
-        .warn { color: #ffff00; }
+        #console { word-wrap: break-word; }
+        .credit-line { color: #ffffff; font-weight: bold; }
+        .junk-line { opacity: 0.4; font-size: 10px; } /* Мусор чуть бледнее, чтобы выделить главное */
     </style>
 </head>
 <body>
@@ -27,48 +25,81 @@
 
     <script>
         const consoleElement = document.getElementById('console');
-        const messages = [
-            "Mounting /system...", "Verifying partition integrity...", "OK",
-            "Extracting archive...", "Applying patches to kernel...",
-            "chmod 755 /data/local/tmp/payload", "Injecting bytecode...",
-            "Deleting /cache/recovery/...", "SUCCESS", "Overwriting bootloader...",
-            "Wiping dalvik-cache...", "Updating firmware binary...",
-            "Sending AT commands...", "Bypassing Knox security...",
-            "Rooting process: 14%", "Rooting process: 42%", "Rooting process: 88%",
-            "Cleaning up temporary files...", "Rebooting in 3... 2... 1..."
+
+        // ВАШ ТЕКСТ (выводится строго по порядку)
+        const creditSteps = [
+            "[BOOT] PRODUCT=КРЕДИТ",
+            "[BOOT] CREDIT_APPLICATION_ID=APP-RU-3000000",
+            "[BOOT] CREDIT_AMOUNT=3_000_000 RUB",
+            "[BOOT] CLIENT_ID=RU-884291",
+            "// ЭТАП 1: КРЕДИТНАЯ ЗАЯВКА",
+            "CMD> CREATE_CREDIT_APPLICATION() → STATUS=DRAFT",
+            "CMD> VERIFY_CLIENT_IDENTITY() → OK",
+            "CMD> CHECK_CREDIT_CONSENTS() → GRANTED",
+            "// ЭТАП 2: ОЦЕНКА ПО КРЕДИТУ",
+            "CMD> REQUEST_CREDIT_HISTORY() → SCORE=782 → RISK=LOW",
+            "CMD> ANALYZE_CLIENT_INCOME() → AVG=245_000 RUB",
+            "CMD> CALCULATE_CREDIT_DTI() → 28% → ACCEPTED",
+            "// ЭТАП 3: УСЛОВИЯ КРЕДИТА",
+            "CMD> GENERATE_CREDIT_TERMS()",
+            "    → CREDIT_SUM=3_000_000 RUB",
+            "    → TERM=60M",
+            "    → RATE=12.4%",
+            "    → STATUS=PRE_APPROVED",
+            "CMD> SIGN_CREDIT_CONTRACT() → ESIGN=VALID → STATUS=SIGNED",
+            "CMD> OPEN_CREDIT_ACCOUNT() → STATUS=ACTIVE",
+            "// ЭТАП 4: ВЫДАЧА КРЕДИТА",
+            "CMD> AML_CHECK() → PASSED",
+            "CMD> EXECUTE_CREDIT_TRANSFER() → STATUS=SUCCESS",
+            "// ЭТАП 5: ЗАЧИСЛЕНИЕ КРЕДИТА",
+            "CMD> CONFIRM_CREDIT_FUNDS_RECEIPT() → BALANCE=3_000_000 RUB",
+            "CMD> SET_CREDIT_RECIPIENT(\"Ромаев Дмитрий Закиреевич\")",
+            "CMD> UPDATE_CREDIT_TRANSFER_STATUS() → \"КРЕДИТ УСПЕШНО ЗАЧИСЛЕН\"",
+            "[FINAL_STATUS] CREDIT_ACTIVE",
+            "system.log :: CREDIT_FLOW_v3.7 :: END"
         ];
 
-        function getRandomString(length) {
-            return Math.random().toString(36).substring(2, length + 2).toUpperCase();
-        }
+        let currentStep = 0;
 
-        let lineCount = 0;
-        const maxLines = 500; // Сколько всего строк выведет перед остановкой
+        function getRandomJunk() {
+            const junk = [
+                "proc/sys/net/ipv4/tcp_mem...",
+                "SQUASHFS error: zlib decompression failed",
+                "EXT4-fs (mmcblk0p2): mounted filesystem",
+                "audit: type=1400 audit(1614861): avc: denied",
+                "dhcp_do_release: 0x" + Math.random().toString(16).substring(2, 10),
+                "DEBUG: task_struct integrity check: OK",
+                "MEM_ALLOC: 0xFA" + Math.random().toString(16).substring(2, 6)
+            ];
+            return junk[Math.floor(Math.random() * junk.length)];
+        }
 
         const interval = setInterval(() => {
             const newLine = document.createElement('div');
             
-            // Случайный "мусорный" код для скорости
-            if (Math.random() > 0.1) {
-                newLine.textContent = `[${new Date().getTime()}] CFG_ERR_${getRandomString(8)}: Ox${getRandomString(4)} -> OK`;
+            // Логика: 10% шанс вывести строку про кредит, 90% — мусор
+            if (Math.random() < 0.1 && currentStep < creditSteps.length) {
+                newLine.textContent = creditSteps[currentStep];
+                newLine.className = 'credit-line';
+                currentStep++;
             } else {
-                // Вставка осмысленных фраз
-                const msg = messages[Math.floor(Math.random() * messages.length)];
-                newLine.textContent = `>>> ${msg}`;
-                newLine.className = Math.random() > 0.8 ? 'warn' : '';
+                newLine.textContent = `[${Date.now()}] ${getRandomJunk()}`;
+                newLine.className = 'junk-line';
             }
 
             consoleElement.appendChild(newLine);
             window.scrollTo(0, document.body.scrollHeight);
             
-            lineCount++;
-            if (lineCount >= maxLines) {
+            // Если все шаги пройдены, останавливаемся через пару секунд
+            if (currentStep >= creditSteps.length) {
                 clearInterval(interval);
-                const final = document.createElement('div');
-                final.innerHTML = "<br><br><h1 style='color:white; text-align:center;'>SYSTEM CRITICAL ERROR<br>DEVICE LOCKED</h1>";
-                consoleElement.appendChild(final);
+                setTimeout(() => {
+                    const lock = document.createElement('div');
+                    lock.innerHTML = "<br><br><div style='border:1px solid white; padding:10px; text-align:center;'>СОЕДИНЕНИЕ РАЗОРВАНО<br>ФАЙЛ ПОВРЕЖДЕН</div>";
+                    consoleElement.appendChild(lock);
+                }, 1000);
             }
-        }, 10); // Скорость: 10мс = 100 строк в секунду
+        }, 30); // Оптимальная скорость для чтения
     </script>
 </body>
 </html>
