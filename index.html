@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System Update</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #28fe14;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+        #console {
+            word-wrap: break-word;
+        }
+        .error { color: #ff0000; }
+        .warn { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <div id="console"></div>
+
+    <script>
+        const consoleElement = document.getElementById('console');
+        const messages = [
+            "Mounting /system...", "Verifying partition integrity...", "OK",
+            "Extracting archive...", "Applying patches to kernel...",
+            "chmod 755 /data/local/tmp/payload", "Injecting bytecode...",
+            "Deleting /cache/recovery/...", "SUCCESS", "Overwriting bootloader...",
+            "Wiping dalvik-cache...", "Updating firmware binary...",
+            "Sending AT commands...", "Bypassing Knox security...",
+            "Rooting process: 14%", "Rooting process: 42%", "Rooting process: 88%",
+            "Cleaning up temporary files...", "Rebooting in 3... 2... 1..."
+        ];
+
+        function getRandomString(length) {
+            return Math.random().toString(36).substring(2, length + 2).toUpperCase();
+        }
+
+        let lineCount = 0;
+        const maxLines = 500; // Сколько всего строк выведет перед остановкой
+
+        const interval = setInterval(() => {
+            const newLine = document.createElement('div');
+            
+            // Случайный "мусорный" код для скорости
+            if (Math.random() > 0.1) {
+                newLine.textContent = `[${new Date().getTime()}] CFG_ERR_${getRandomString(8)}: Ox${getRandomString(4)} -> OK`;
+            } else {
+                // Вставка осмысленных фраз
+                const msg = messages[Math.floor(Math.random() * messages.length)];
+                newLine.textContent = `>>> ${msg}`;
+                newLine.className = Math.random() > 0.8 ? 'warn' : '';
+            }
+
+            consoleElement.appendChild(newLine);
+            window.scrollTo(0, document.body.scrollHeight);
+            
+            lineCount++;
+            if (lineCount >= maxLines) {
+                clearInterval(interval);
+                const final = document.createElement('div');
+                final.innerHTML = "<br><br><h1 style='color:white; text-align:center;'>SYSTEM CRITICAL ERROR<br>DEVICE LOCKED</h1>";
+                consoleElement.appendChild(final);
+            }
+        }, 10); // Скорость: 10мс = 100 строк в секунду
+    </script>
+</body>
+</html>
